@@ -6,6 +6,7 @@
         _GrassTexture("Grass texture", 2D) = "white" {}
         _HighlandTexture("Highland texture", 2D) = "white" {}
         _RockTexture("Rock texture", 2D) = "white" {}
+        _SnowTexture("Snow texture", 2D) = "white" {}
 	}
 	SubShader
     {
@@ -24,6 +25,7 @@
         sampler2D _GrassTexture;
         sampler2D _HighlandTexture;
         sampler2D _RockTexture;
+        sampler2D _SnowTexture;
         float _MaxHeight;
 
 		struct Input
@@ -52,19 +54,31 @@
             fixed4 grassColour = tex2D(_GrassTexture, IN.vp.xz * 0.01f);
             fixed4 highlandColour = tex2D(_HighlandTexture, IN.vp.xz * 0.01f);
             fixed4 rockColour = tex2D(_RockTexture, IN.vp.xz * 0.01f);
+            fixed4 snowColour = tex2D(_SnowTexture, IN.vp.xz * 0.01f);
             //rockColour = fixed4(1.0f, 0.0f, 0.0f, 1.0f);
             
             float tGround = min(IN.vp.y / _MaxHeight, 1.0f);
             
             float NdotUp = dot(IN.vn.xyz, fixed3(0.0f, 1.0f, 0.0f));
             float tRock = max(1.0f - NdotUp * 1.0f, 0);
-            tRock = smoothstep(0.65f, 0.8f, tRock);
+            tRock = smoothstep(0.85f, 1.0f, tRock);
             tRock = tRock > 0.0f ? lerp(0.0f, 1.0f, tRock) : 0.0f;
 
-            fixed4 cGrass = grassColour * (1.0f - tGround) + highlandColour * tGround;
-            fixed4 cGround = cGrass * (1.0f - tRock) + rockColour * tRock;
-            fixed4 c = cGround;
+            fixed4 cGround = grassColour;
+            if (IN.vp.y < 2000.0f)
+            {
+                float tHighland = smoothstep(0.0f, 2000.0f, IN.vp.y);
+                cGround = highlandColour * tHighland + grassColour * (1.0f - tHighland);
+            }
+            else if (IN.vp.y >= 2000.0f)
+            {
+                float tSnow = smoothstep(2000.0f, 2500.0f, IN.vp.y);
+                cGround = snowColour * tSnow + highlandColour * (1.0f - tSnow);
+            }
+            fixed4 c = cGround * (1.0f - tRock) + rockColour * tRock;
             //c.xyz = fixed3(IN.vn.x, IN.vn.y, IN.vn.z);
+
+            //c.xyz = grassColour;
 
             o.Albedo = c.rgb;
 			o.Alpha = c.a;

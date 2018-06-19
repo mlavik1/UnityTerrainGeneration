@@ -8,8 +8,9 @@ public class TerrainGenerator : MonoBehaviour
     public GameObject CameraObject;
 
     private const float mCellSize = 1000.0f;
-    private const int mCellTextureRes = 256;
-    private const float mTerrainHeight = 100.0f;
+    private const int mCellTextureRes = 40;
+    //private const int mCellTextureRes = 256;
+    private float mTerrainHeight = 3500.0f;
 
     private Dictionary<TerrainGridCell, TerrainCell> mTerrainCells = new Dictionary<TerrainGridCell, TerrainCell>();
 
@@ -24,12 +25,18 @@ public class TerrainGenerator : MonoBehaviour
     {
         if(CameraObject != null)
         {
+            const int viewRange = 3;
             int camGridPosX = (int)Mathf.Round(CameraObject.transform.position.x / mCellSize);
             int camGridPosY = (int)Mathf.Round(CameraObject.transform.position.z / mCellSize);
-            TerrainGridCell[] requiredCells = { new TerrainGridCell(camGridPosX, camGridPosY), new TerrainGridCell(camGridPosX - 1, camGridPosY), new TerrainGridCell(camGridPosX + 1, camGridPosY),
-                                                new TerrainGridCell(camGridPosX, camGridPosY + 1), new TerrainGridCell(camGridPosX - 1, camGridPosY + 1), new TerrainGridCell(camGridPosX + 1, camGridPosY + 1),
-                                                new TerrainGridCell(camGridPosX, camGridPosY - 1), new TerrainGridCell(camGridPosX - 1, camGridPosY - 1), new TerrainGridCell(camGridPosX + 1, camGridPosY - 1)};
-            foreach(TerrainGridCell requiredCell in requiredCells)
+            List<TerrainGridCell> requiredCells = new List<TerrainGridCell>();
+            for(int iX = -viewRange; iX <= viewRange; iX ++)
+            {
+                for (int iY = -viewRange; iY <= viewRange; iY++)
+                {
+                    requiredCells.Add(new TerrainGridCell(camGridPosX + iX, camGridPosY + iY));
+                }
+            }
+            foreach (TerrainGridCell requiredCell in requiredCells)
             {
                 if(!mTerrainCells.ContainsKey(requiredCell))
                 {
@@ -53,13 +60,27 @@ public class TerrainGenerator : MonoBehaviour
             {
                 float worldX = inPosition.x + (mCellSize * iX) / (mCellTextureRes - 1);
                 float worldY = inPosition.z + (mCellSize * iY) / (mCellTextureRes - 1);
-                float pXRidge = worldX * 2.0f / 1000.0f;
-                float pYRidge = worldY * 2.0f / 1000.0f;
-                float pXNoise = worldX * 10.0f / 1000.0f;
-                float pYNoise = worldY * 10.0f / 1000.0f;
-                float ridgeNoise = 1.0f - Mathf.Abs(0.5f - Mathf.PerlinNoise(pXRidge, pYRidge)) * 2.0f;
-                float noise = Mathf.PerlinNoise(pXNoise, pYNoise);
-                float perlin = ridgeNoise + (0.5f - noise) * 0.15f;
+                float pXArea = worldX * 0.1f / 1000.0f;
+                float pYArea = worldY * 0.1f / 1000.0f;
+                float pXElevationRate = worldX * 0.05f / 1000.0f;
+                float pYElevationRate = worldY * 0.05f / 1000.0f;
+
+                float areaNoise = Mathf.PerlinNoise(pXArea, pYArea);
+
+                float valleyNoise = GenerateTurbulentWave(5.0f, worldX, worldY, 0.5f / 1000.0f, 900.0f);         
+                float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX + 1000.0f, worldY + 1000.0f, 2.0f / 1000.0f, 200.0f);
+
+                float elevationRateNoise = Mathf.PerlinNoise(pXArea, pYArea);
+                float elevationRate = elevationRateNoise;// 0.3f * elevationRateNoise + (1.0f - elevationRateNoise);
+
+                const float valleyHeight = 600.0f;
+                const float smallValleyHeight = 40.0f;
+                const float areaHeight = 3000.0f;
+
+                float perlin = valleyNoise * (valleyHeight / mTerrainHeight) + smallValleyNoise * (smallValleyHeight / mTerrainHeight);
+                perlin *= elevationRate;
+                perlin += areaNoise * (areaHeight / mTerrainHeight);
+
                 terrainCell.mCellHeights[iX, iY] = perlin;
             }
         }
@@ -99,9 +120,9 @@ public class TerrainGenerator : MonoBehaviour
                 float hL = inTerrainCell.mCellHeights[System.Math.Max(iX - 1, 0), iY];
                 float dX = (hC - hL) + (hR - hC);
                 float dY = (hC - hB) + (hF - hC);
-                Vector3 xSlope = new Vector3(1.0f, dX * mTerrainHeight, 0.0f);
-                Vector3 ySlope = new Vector3(0.0f, dY * mTerrainHeight, 1.0f);
-                Vector3 vertexNormal = Vector3.Cross(ySlope, xSlope).normalized;
+                Vector3 xSlope = new Vector3(2.0f, dX * mTerrainHeight, 0.0f);
+                Vector3 ySlope = new Vector3(0.0f, dY * mTerrainHeight, 2.0f);
+                Vector3 vertexNormal = Vector3.Cross(ySlope, xSlope).normalized;               
                 normals[iX + iY * mCellTextureRes] = vertexNormal;
 
                 if (iX > 0 && iY > 0)
@@ -133,5 +154,11 @@ public class TerrainGenerator : MonoBehaviour
 
         MeshCollider meshCollider = inTerrainCell.gameObject.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
+    }
+
+    private float GenerateTurbulentWave(float inTurbPower, float inX, float inY, float inNoseFactor, float inPeriod)
+    {
+        float xyValue = Mathf.PerlinNoise(inX * inNoseFactor, inY * inNoseFactor) * inTurbPower + (inX + inY) / inPeriod;
+        return (Mathf.Sin(xyValue) + 1.0f) / 2.0f;
     }
 }
