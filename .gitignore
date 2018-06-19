@@ -1,0 +1,5 @@
+*.layout
+*.sdf
+TerrainGeneration/Library
+TerrainGeneration/Temp
+TerrainGeneration/obj
