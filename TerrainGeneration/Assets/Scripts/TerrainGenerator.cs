@@ -9,24 +9,20 @@ public class TerrainGenerator : MonoBehaviour
     public GameObject TreeAsset;
 
     private const float mCellSize = 1000.0f;
-    private const int mCellTextureRes = 40;
-    //private const int mCellTextureRes = 256;
-    private float mTerrainHeight = 3500.0f;
+    private const int mCellTextureRes = 15;
+    private const float mTerrainHeight = 3500.0f;
 
     private Dictionary<TerrainGridCell, TerrainCell> mTerrainCells = new Dictionary<TerrainGridCell, TerrainCell>();
 
 	void Start ()
     {
-        //GenerateObject(transform.position);
-        //GenerateObject(transform.position + Vector3.right * mCellSize);
-        //GenerateObject(transform.position + Vector3.forward * mCellSize);
     }
 
 	void Update ()
     {
         if(CameraObject != null)
         {
-            const int viewRange = 3;
+            const int viewRange = 20;
             int camGridPosX = (int)Mathf.Round(CameraObject.transform.position.x / mCellSize);
             int camGridPosY = (int)Mathf.Round(CameraObject.transform.position.z / mCellSize);
             List<TerrainGridCell> requiredCells = new List<TerrainGridCell>();
@@ -62,28 +58,26 @@ public class TerrainGenerator : MonoBehaviour
             {
                 float worldX = inPosition.x + (mCellSize * iX) / (mCellTextureRes - 1);
                 float worldY = inPosition.z + (mCellSize * iY) / (mCellTextureRes - 1);
-                float pXArea = worldX * 0.1f / 1000.0f;
-                float pYArea = worldY * 0.1f / 1000.0f;
-                float pXElevationRate = worldX * 0.05f / 1000.0f;
-                float pYElevationRate = worldY * 0.05f / 1000.0f;
+                float pXArea = worldX * 0.02f / 1000.0f;
+                float pYArea = worldY * 0.02f / 1000.0f;
 
                 float areaNoise = Mathf.PerlinNoise(pXArea, pYArea);
 
-                float valleyNoise = GenerateTurbulentWave(5.0f, worldX, worldY, 0.5f / 1000.0f, 900.0f);         
-                float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX + 1000.0f, worldY + 1000.0f, 2.0f / 1000.0f, 200.0f);
+                float valleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.3f / 1000.0f, 1400.0f);         
+                float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 1.0f / 1000.0f, 200.0f);
 
-                float elevationRateNoise = Mathf.PerlinNoise(pXArea, pYArea);
-                float elevationRate = elevationRateNoise;// 0.3f * elevationRateNoise + (1.0f - elevationRateNoise);
+                float elevationRateNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.07f / 1000.0f, 7000.0f);
+                float elevationRate = Mathf.Clamp((0.5f - elevationRateNoise) * 2.0f + 0.8f, 0.0f, 1.0f);
 
-                const float valleyHeight = 600.0f;
+                const float valleyHeight = 950.0f;
                 const float smallValleyHeight = 40.0f;
-                const float areaHeight = 3000.0f;
+                const float areaHeight = 6000.0f;
 
                 float perlin = valleyNoise * (valleyHeight / mTerrainHeight) + smallValleyNoise * (smallValleyHeight / mTerrainHeight);
                 perlin *= elevationRate;
-                perlin += areaNoise * (areaHeight / mTerrainHeight);
+                perlin += (0.7f - areaNoise) * (areaHeight / mTerrainHeight);
 
-                terrainCell.mCellHeights[iX, iY] = perlin;
+                terrainCell.mCellHeights[iX, iY] = perlin;          
 
                 //terrainCell.mVegetation[iX, iY] = Mathf.PerlinNoise(pXArea, pYArea) > 0.6f ? 1 : 0;
             }

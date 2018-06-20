@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour
             movementDir += transform.right;
         }
         movementDir = movementDir.normalized;
-        float movementSpeed = Input.GetKey(KeyCode.LeftShift) ? 120.0f : 60.0f;
+        float movementSpeed = Input.GetKey(KeyCode.LeftShift) ? 550.0f : 70.0f;
         GetComponent<Rigidbody>().velocity = Vector3.up * GetComponent<Rigidbody>().velocity.y + movementDir * movementSpeed;
         GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
 
