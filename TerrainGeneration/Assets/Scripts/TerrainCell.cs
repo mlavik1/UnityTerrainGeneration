@@ -17,4 +17,5 @@ public struct TerrainGridCell
 public class TerrainCell : MonoBehaviour
 {
     public float[,] mCellHeights;
+    public int[,] mVegetation;
 }

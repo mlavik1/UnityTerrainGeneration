@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\TerrainCell.cs" />
     <Compile Include="Assets\Scripts\TerrainGenerator.cs" />
     <Compile Include="Assets\Scripts\TestScript.cs" />
+    <Compile Include="Assets\VisualDebuggerWindow.cs" />
     <None Include="Assets\Shaders\TerrainShader.shader" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>E:/Prosjekt/Unity/UnityTerrainGeneration/TerrainGeneration/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>

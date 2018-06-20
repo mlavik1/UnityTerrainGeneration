@@ -15,7 +15,7 @@
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard fullforwardshadows vertex:vert
+		#pragma surface surf Standard noambient fullforwardshadows vertex:vert
 
 
 		// Use shader model 3.0 target, to get nicer looking lighting
@@ -61,8 +61,7 @@
             
             float NdotUp = dot(IN.vn.xyz, fixed3(0.0f, 1.0f, 0.0f));
             float tRock = max(1.0f - NdotUp * 1.0f, 0);
-            tRock = smoothstep(0.85f, 1.0f, tRock);
-            tRock = tRock > 0.0f ? lerp(0.0f, 1.0f, tRock) : 0.0f;
+            tRock = smoothstep(0.15f, 0.35f, tRock);
 
             fixed4 cGround = grassColour;
             if (IN.vp.y < 2000.0f)

@@ -6,6 +6,7 @@ public class TerrainGenerator : MonoBehaviour
 {
     public Material TerrainMaterial;
     public GameObject CameraObject;
+    public GameObject TreeAsset;
 
     private const float mCellSize = 1000.0f;
     private const int mCellTextureRes = 40;
@@ -53,6 +54,7 @@ public class TerrainGenerator : MonoBehaviour
         TerrainCell terrainCell = obj.AddComponent<TerrainCell>();
 
         terrainCell.mCellHeights = new float[mCellTextureRes, mCellTextureRes];
+        terrainCell.mVegetation= new int[mCellTextureRes, mCellTextureRes];
 
         for (int iX = 0; iX < mCellTextureRes; iX++)
         {
@@ -82,6 +84,8 @@ public class TerrainGenerator : MonoBehaviour
                 perlin += areaNoise * (areaHeight / mTerrainHeight);
 
                 terrainCell.mCellHeights[iX, iY] = perlin;
+
+                //terrainCell.mVegetation[iX, iY] = Mathf.PerlinNoise(pXArea, pYArea) > 0.6f ? 1 : 0;
             }
         }
 
@@ -120,8 +124,8 @@ public class TerrainGenerator : MonoBehaviour
                 float hL = inTerrainCell.mCellHeights[System.Math.Max(iX - 1, 0), iY];
                 float dX = (hC - hL) + (hR - hC);
                 float dY = (hC - hB) + (hF - hC);
-                Vector3 xSlope = new Vector3(2.0f, dX * mTerrainHeight, 0.0f);
-                Vector3 ySlope = new Vector3(0.0f, dY * mTerrainHeight, 2.0f);
+                Vector3 xSlope = new Vector3(2.0f * mCellSize / (mCellTextureRes - 1), dX * mTerrainHeight, 0.0f);
+                Vector3 ySlope = new Vector3(0.0f, dY * mTerrainHeight, 2.0f *mCellSize / (mCellTextureRes - 1));
                 Vector3 vertexNormal = Vector3.Cross(ySlope, xSlope).normalized;               
                 normals[iX + iY * mCellTextureRes] = vertexNormal;
 
