@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
-	void FixedUpdate ()
+	void FixedUpdate()
     {
         Vector3 movementDir = Vector3.zero;
 		if(Input.GetKey(KeyCode.W))

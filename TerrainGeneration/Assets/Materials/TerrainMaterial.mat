@@ -63,7 +63,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RockTexture:
-        m_Texture: {fileID: 2800000, guid: 787d572fe1cdec64794a5ec1405d4def, type: 3}
+        m_Texture: {fileID: 2800000, guid: b032ad1806c6d3c46b6e4114ef355658, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SnowTexture:
