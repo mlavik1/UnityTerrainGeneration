@@ -55,14 +55,14 @@
 
             fixed4 grassColour = (tex2D(_GrassTexture, IN.vp.xz * 0.05f) + tex2D(_GrassTexture, IN.vp.xz * 0.001f) + tex2D(_GrassTexture, IN.vp.xz * 0.0005f)) / 3.0f;
             fixed4 highlandColour = (tex2D(_HighlandTexture, IN.vp.xz * 0.05f) + tex2D(_HighlandTexture, IN.vp.xz * 0.001f) + tex2D(_HighlandTexture, IN.vp.xz * 0.0005f)) / 3.0f;
-            fixed4 rockColour = (tex2D(_RockTexture, IN.vp.xz * 0.001f) + tex2D(_RockTexture, IN.vp.xz * 0.0005f)) / 2.0f;
-            fixed4 snowColour = (tex2D(_SnowTexture, IN.vp.xz * 0.001f) + tex2D(_SnowTexture, IN.vp.xz * 0.0005f)) / 2.0f;
+            fixed4 rockColour = (tex2D(_RockTexture, IN.vp.xz * 0.05f) + tex2D(_RockTexture, IN.vp.xz * 0.001f) + tex2D(_RockTexture, IN.vp.xz * 0.0005f)) / 3.0f;
+            fixed4 snowColour = (tex2D(_SnowTexture, IN.vp.xz * 0.001f) + tex2D(_SnowTexture, IN.vp.xz * 0.005f)) / 2.0f;
             
             float tGround = min(IN.vp.y / _MaxHeight, 1.0f);
             
             float NdotUp = dot(IN.vn.xyz, fixed3(0.0f, 1.0f, 0.0f));
             float tRock = max(1.0f - NdotUp * 1.0f, 0);
-            tRock = smoothstep(0.15f, 0.35f, tRock);
+            tRock = smoothstep(0.12f, 0.45f, tRock);
 
             fixed4 cGround = grassColour;
             if (IN.vp.y < 2000.0f)

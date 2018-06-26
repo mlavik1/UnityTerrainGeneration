@@ -81,17 +81,21 @@ public class TerrainGenerator : MonoBehaviour
                 float valleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.0003f, 1400.0f);         
                 float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 000.1f, 200.0f);
                 float fbmNoise = fbm(worldX * 0.0001f, worldY * 0.0001f, 0.0f, 8, 1.92f, 0.4f) * 2.0f - 1.0f;
+                float fbmMountainNoise = fbm(worldX * 0.00003f, worldY * 0.00003f, 0.0f, 4, 1.92f, 0.5f) * 2.0f - 1.0f;
 
                 float elevationRateNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.00007f, 7000.0f);
                 float elevationRate = Mathf.Clamp((0.5f - elevationRateNoise) * 2.0f + 0.8f, 0.0f, 1.0f);
 
                 const float valleyHeight = 950.0f;
                 const float areaHeight = 6000.0f;
-                const float fbmHeight = 1100.0f;
+                const float fbmHeight = 900.0f;
+                const float fbmMountainHeight = 2500.0f;
 
-                float perlin = fbmNoise * (fbmHeight / mTerrainHeight) + valleyNoise * (valleyHeight / mTerrainHeight) * elevationRateNoise;
+                float perlin = fbmNoise * (fbmHeight / mTerrainHeight);
+                perlin += valleyNoise * (valleyHeight / mTerrainHeight) * elevationRateNoise;
+                perlin += (0.8f - fbmMountainNoise) * (fbmMountainHeight / mTerrainHeight);
                 //perlin *= elevationRate;
-                perlin += (0.7f - areaNoise) * (areaHeight / mTerrainHeight);
+                perlin += (0.6f - areaNoise) * (areaHeight / mTerrainHeight);
 
                 terrainCell.mCellHeights[iX + 1, iY + 1] = perlin;          
 
