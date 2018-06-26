@@ -43,41 +43,57 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 
+    private float fbm(float inX, float inY, float seed, int octaves, float lacunarity, float gain)
+    {
+        float sum = 0;
+        float freq = 1.0f;
+        float amp = 1.0f;
+        for(int i = 0; i < octaves; i++)
+        {
+            float n = Mathf.PerlinNoise(inX * freq, inY * freq);
+            sum += n * amp;
+            freq *= lacunarity;
+            amp *= gain;
+        }
+        return sum;
+    }
+
     private TerrainCell GenerateObject(Vector3 inPosition)
     {
         GameObject obj = new GameObject();
         obj.transform.position = inPosition;
         TerrainCell terrainCell = obj.AddComponent<TerrainCell>();
 
-        terrainCell.mCellHeights = new float[mCellTextureRes, mCellTextureRes];
-        terrainCell.mVegetation= new int[mCellTextureRes, mCellTextureRes];
+        terrainCell.mCellHeights = new float[mCellTextureRes + 2, mCellTextureRes + 2];
+        //terrainCell.mVegetation= new int[mCellTextureRes, mCellTextureRes];
 
-        for (int iX = 0; iX < mCellTextureRes; iX++)
+        for (int iX = -1; iX < mCellTextureRes + 1; iX++)
         {
-            for (int iY = 0; iY < mCellTextureRes; iY++)
+            for (int iY = -1; iY < mCellTextureRes + 1; iY++)
             {
                 float worldX = inPosition.x + (mCellSize * iX) / (mCellTextureRes - 1);
                 float worldY = inPosition.z + (mCellSize * iY) / (mCellTextureRes - 1);
-                float pXArea = worldX * 0.02f / 1000.0f;
-                float pYArea = worldY * 0.02f / 1000.0f;
+                float pXArea = worldX * 0.00002f;
+                float pYArea = worldY * 0.00002f;
 
                 float areaNoise = Mathf.PerlinNoise(pXArea, pYArea);
 
-                float valleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.3f / 1000.0f, 1400.0f);         
-                float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 1.0f / 1000.0f, 200.0f);
+                float valleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.0003f, 1400.0f);         
+                float smallValleyNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 000.1f, 200.0f);
+                float fbmNoise = fbm(worldX * 0.0001f, worldY * 0.0001f, 0.0f, 8, 1.92f, 0.4f) * 2.0f - 1.0f;
 
-                float elevationRateNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.07f / 1000.0f, 7000.0f);
+                float elevationRateNoise = GenerateTurbulentWave(4.0f, worldX, worldY, 0.00007f, 7000.0f);
                 float elevationRate = Mathf.Clamp((0.5f - elevationRateNoise) * 2.0f + 0.8f, 0.0f, 1.0f);
 
                 const float valleyHeight = 950.0f;
-                const float smallValleyHeight = 40.0f;
                 const float areaHeight = 6000.0f;
+                const float fbmHeight = 1100.0f;
 
-                float perlin = valleyNoise * (valleyHeight / mTerrainHeight) + smallValleyNoise * (smallValleyHeight / mTerrainHeight);
-                perlin *= elevationRate;
+                float perlin = fbmNoise * (fbmHeight / mTerrainHeight) + valleyNoise * (valleyHeight / mTerrainHeight) * elevationRateNoise;
+                //perlin *= elevationRate;
                 perlin += (0.7f - areaNoise) * (areaHeight / mTerrainHeight);
 
-                terrainCell.mCellHeights[iX, iY] = perlin;          
+                terrainCell.mCellHeights[iX + 1, iY + 1] = perlin;          
 
                 //terrainCell.mVegetation[iX, iY] = Mathf.PerlinNoise(pXArea, pYArea) > 0.6f ? 1 : 0;
             }
@@ -111,11 +127,11 @@ public class TerrainGenerator : MonoBehaviour
                 Vector2 vertexUV = new Vector2((float)iX / mCellTextureRes, (float)iY / mCellTextureRes);
                 texCoords[iX + iY * mCellTextureRes] = vertexUV;
 
-                float hC = inTerrainCell.mCellHeights[iX, iY];
-                float hF = inTerrainCell.mCellHeights[iX, System.Math.Min(iY + 1, mCellTextureRes - 1)];
-                float hB = inTerrainCell.mCellHeights[iX, System.Math.Max(iY - 1, 0)];
-                float hR = inTerrainCell.mCellHeights[System.Math.Min(iX + 1, mCellTextureRes - 1), iY];
-                float hL = inTerrainCell.mCellHeights[System.Math.Max(iX - 1, 0), iY];
+                float hC = inTerrainCell.mCellHeights[1 + iX, 1 + iY];
+                float hF = inTerrainCell.mCellHeights[1 + iX, 1 + iY + 1];
+                float hB = inTerrainCell.mCellHeights[1 + iX, 1 + iY - 1];
+                float hR = inTerrainCell.mCellHeights[1 + iX + 1, 1 + iY];
+                float hL = inTerrainCell.mCellHeights[1 + iX - 1, 1 + iY];
                 float dX = (hC - hL) + (hR - hC);
                 float dY = (hC - hB) + (hF - hC);
                 Vector3 xSlope = new Vector3(2.0f * mCellSize / (mCellTextureRes - 1), dX * mTerrainHeight, 0.0f);

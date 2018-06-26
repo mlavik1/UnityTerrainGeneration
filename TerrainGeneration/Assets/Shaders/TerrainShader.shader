@@ -51,11 +51,12 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed4 grassColour = tex2D(_GrassTexture, IN.vp.xz * 0.01f);
-            fixed4 highlandColour = tex2D(_HighlandTexture, IN.vp.xz * 0.01f);
-            fixed4 rockColour = tex2D(_RockTexture, IN.vp.xz * 0.01f);
-            fixed4 snowColour = tex2D(_SnowTexture, IN.vp.xz * 0.01f);
-            //rockColour = fixed4(1.0f, 0.0f, 0.0f, 1.0f);
+            float blendFactor = tex2D(_RockTexture, IN.vp.xz * 0.0005f).g;
+
+            fixed4 grassColour = (tex2D(_GrassTexture, IN.vp.xz * 0.05f) + tex2D(_GrassTexture, IN.vp.xz * 0.001f) + tex2D(_GrassTexture, IN.vp.xz * 0.0005f)) / 3.0f;
+            fixed4 highlandColour = (tex2D(_HighlandTexture, IN.vp.xz * 0.05f) + tex2D(_HighlandTexture, IN.vp.xz * 0.001f) + tex2D(_HighlandTexture, IN.vp.xz * 0.0005f)) / 3.0f;
+            fixed4 rockColour = (tex2D(_RockTexture, IN.vp.xz * 0.001f) + tex2D(_RockTexture, IN.vp.xz * 0.0005f)) / 2.0f;
+            fixed4 snowColour = (tex2D(_SnowTexture, IN.vp.xz * 0.001f) + tex2D(_SnowTexture, IN.vp.xz * 0.0005f)) / 2.0f;
             
             float tGround = min(IN.vp.y / _MaxHeight, 1.0f);
             
@@ -75,9 +76,6 @@
                 cGround = snowColour * tSnow + highlandColour * (1.0f - tSnow);
             }
             fixed4 c = cGround * (1.0f - tRock) + rockColour * tRock;
-            //c.xyz = fixed3(IN.vn.x, IN.vn.y, IN.vn.z);
-
-            //c.xyz = grassColour;
 
             o.Albedo = c.rgb;
 			o.Alpha = c.a;
